@@ -1,0 +1,10 @@
+/bin/
+backend/.cache/
+backend/coverage.out
+client/node_modules/
+.env
+client/.env
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
