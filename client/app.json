@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "Akiba",
+    "slug": "akiba-client",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "platforms": ["ios", "android", "web"],
+    "jsEngine": "hermes"
+  }
+}
