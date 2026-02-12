@@ -50,7 +50,7 @@ func testRouter() http.Handler {
 	jwtMgr := auth.NewJWTManager("secret", "test")
 	authSvc := usecase.NewAuthService(repo, jwtMgr, time.Hour)
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	return NewRouter(logger, authSvc, jwtMgr)
+	return NewRouter(logger, authSvc, jwtMgr, func(ctx context.Context) error { return nil })
 }
 
 func TestSignupValidationError(t *testing.T) {
@@ -99,5 +99,27 @@ func TestLoginValidationError(t *testing.T) {
 	r.ServeHTTP(w, req)
 	if w.Code != http.StatusBadRequest {
 		t.Fatalf("expected 400, got %d", w.Code)
+	}
+}
+
+func TestSignupUnknownFieldError(t *testing.T) {
+	r := testRouter()
+	body := `{"email":"user@example.com","phone":"+14155552671","username":"user_1","password":"Password1","unexpected":"x"}`
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/signup", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", w.Code)
+	}
+}
+
+func TestReadyEndpoint(t *testing.T) {
+	r := testRouter()
+	req := httptest.NewRequest(http.MethodGet, "/ready", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
 	}
 }

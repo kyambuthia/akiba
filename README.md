@@ -73,6 +73,8 @@ make test
 - `POST /api/v1/auth/signup`
 - `POST /api/v1/auth/login`
 - `GET /api/v1/me` (Bearer token)
+- `GET /health` (liveness)
+- `GET /ready` (readiness)
 
 ### Curl examples
 Signup:
@@ -112,4 +114,5 @@ Error shape:
 - never logs passwords/tokens
 - UTC timestamps
 - request ID + recover + structured request logs
+- strict JSON parsing (unknown fields rejected) + 1MB request body limit
 - idempotent startup index creation on `users` collection (`emailLower`, `phoneE164`, `usernameLower`)

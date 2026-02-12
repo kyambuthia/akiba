@@ -1,8 +1,10 @@
 package http
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"akiba/backend/internal/auth"
 	"akiba/backend/internal/usecase"
@@ -10,7 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func NewRouter(logger *slog.Logger, authService *usecase.AuthService, jwtMgr *auth.JWTManager) http.Handler {
+func NewRouter(logger *slog.Logger, authService *usecase.AuthService, jwtMgr *auth.JWTManager, readinessCheck func(context.Context) error) http.Handler {
 	r := chi.NewRouter()
 	r.Use(RequestID())
 	r.Use(Recoverer())
@@ -25,6 +27,19 @@ func NewRouter(logger *slog.Logger, authService *usecase.AuthService, jwtMgr *au
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	})
+	r.Get("/ready", func(w http.ResponseWriter, r *http.Request) {
+		if readinessCheck == nil {
+			writeJSON(w, http.StatusOK, map[string]string{"status": "ready"})
+			return
+		}
+		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+		defer cancel()
+		if err := readinessCheck(ctx); err != nil {
+			writeError(w, http.StatusServiceUnavailable, "service_unavailable", "service not ready", nil)
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]string{"status": "ready"})
 	})
 	return r
 }

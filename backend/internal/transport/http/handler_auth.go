@@ -1,8 +1,6 @@
 package http
 
 import (
-	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 
@@ -41,8 +39,7 @@ func mapUser(u *domain.User) userResponse {
 
 func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	var req signupRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "bad_request", "invalid JSON payload", nil)
+	if !decodeJSONBody(w, r, &req) {
 		return
 	}
 	res, fields, err := h.authService.Signup(r.Context(), usecase.SignupInput(req))
@@ -62,8 +59,7 @@ func (h *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req loginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "bad_request", "invalid JSON payload", nil)
+	if !decodeJSONBody(w, r, &req) {
 		return
 	}
 	res, fields, err := h.authService.Login(r.Context(), usecase.LoginInput(req))
@@ -93,9 +89,4 @@ func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"user": mapUser(user)})
-}
-
-func userIDFromContext(ctx context.Context) string {
-	v, _ := ctx.Value(ctxKeyUserID{}).(string)
-	return v
 }
