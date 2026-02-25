@@ -110,7 +110,7 @@ func (s *AuthService) Login(ctx context.Context, in LoginInput) (*AuthResult, do
 	if user.Status != domain.UserStatusActive {
 		return nil, nil, domain.ErrInvalidCredentials
 	}
-	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(in.Password)) != nil {
+	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) != nil {
 		return nil, nil, domain.ErrInvalidCredentials
 	}
 	token, err := s.jwt.IssueAccessToken(user.ID, s.accessTokenTTL)

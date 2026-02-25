@@ -80,3 +80,18 @@ func TestLoginValidation(t *testing.T) {
 		t.Fatalf("expected login/password validation fields, got %#v", fields)
 	}
 }
+
+func TestLoginTrimsPasswordToMatchSignupNormalization(t *testing.T) {
+	repo := &memRepo{users: map[string]*domain.User{}}
+	svc := NewAuthService(repo, auth.NewJWTManager("secret", "test"), time.Hour)
+	_, _, err := svc.Signup(context.Background(), SignupInput{
+		Email: "user@example.com", Phone: "+14155552671", Username: "user_1", Password: " Password1 ",
+	})
+	if err != nil {
+		t.Fatalf("signup failed: %v", err)
+	}
+
+	if _, _, err := svc.Login(context.Background(), LoginInput{Login: "user_1", Password: "Password1"}); err != nil {
+		t.Fatalf("login with trimmed password should succeed: %v", err)
+	}
+}
