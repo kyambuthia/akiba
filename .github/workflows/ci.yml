@@ -63,5 +63,8 @@ jobs:
       - name: Build backend image
         run: docker build -t akiba-backend:ci ./backend
 
+      - name: Prepare env for compose validation
+        run: cp .env.example .env
+
       - name: Validate compose
         run: docker compose config
