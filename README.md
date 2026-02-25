@@ -1,5 +1,5 @@
 # Akiba
-Fintech identity and auth foundation monorepo.
+Akiba is a monorepo for a fintech-ready authentication foundation: a Go API for signup/login/JWT auth plus an Expo React Native client scaffold for integrating the flows.
 
 ## Stack
 - Backend: Go 1.22+, Chi, MongoDB, bcrypt, JWT (HS256)
