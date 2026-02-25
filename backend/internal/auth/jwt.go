@@ -2,8 +2,9 @@ package auth
 
 import (
 	"errors"
-	"github.com/golang-jwt/jwt/v5"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Claims struct {
@@ -29,16 +30,16 @@ func (j *JWTManager) IssueAccessToken(userID string, ttl time.Duration) (string,
 
 func (j *JWTManager) Verify(tokenString string) (*Claims, error) {
 	tok, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		if token.Method != jwt.SigningMethodHS256 {
+		if token.Method == nil || token.Method.Alg() != jwt.SigningMethodHS256.Alg() {
 			return nil, errors.New("invalid signing method")
 		}
 		return j.secret, nil
-	})
+	}, jwt.WithIssuer(j.issuer), jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 	if err != nil {
 		return nil, err
 	}
 	claims, ok := tok.Claims.(*Claims)
-	if !ok || !tok.Valid {
+	if !ok || !tok.Valid || claims.Sub == "" {
 		return nil, errors.New("invalid token")
 	}
 	return claims, nil
